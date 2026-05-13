@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.5
+    container_name: PostgresDB
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER:-incident_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-incident_secure_password_123}
+      POSTGRES_DB: ${DB_NAME:-incidents_db}
+    volumes:
+      - postgresdb_data:/var/lib/postgresql
+
+  redis:
+    image: redis:7-alpine
+    container_name: incident-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_db:/data
+
+volumes:
+  postgresdb_data:
+  redis_db:
