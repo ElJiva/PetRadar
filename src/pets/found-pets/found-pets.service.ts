@@ -6,6 +6,8 @@ import { LostPet } from 'src/core/entities/lost-pet.entity';
 import { FoundPetCDto } from 'src/core/models/found-pet.model';
 import { CacheService } from 'src/cache/cache.service';
 import { logger } from 'src/config/logger';
+import { EmailService } from 'src/email/email.service';
+import { envs } from 'src/config/envs';
 
 const CACHE_KEY_FOUND_PETS = 'found-pets:all';
 const SEARCH_RADIUS_METERS = 500;
@@ -18,6 +20,7 @@ export class FoundPetsService {
     @InjectRepository(LostPet)
     private readonly lostPetRepository: Repository<LostPet>,
     private readonly cacheService: CacheService,
+    private readonly emailService: EmailService,
   ) {}
 
   async findAll(): Promise<FoundPet[]> {
@@ -88,6 +91,28 @@ export class FoundPetsService {
     logger.info(
       `[FoundPetsService] Se encontraron ${nearbyLostPets.length} mascotas perdidas cerca`,
     );
+
+    // Enviar correos
+    for (const lostPet of nearbyLostPets) {
+      const lostLon = lostPet.location.coordinates[0];
+      const lostLat = lostPet.location.coordinates[1];
+      const mapboxToken = envs.MAPBOX_TOKEN;
+      const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s-l+FF0000(${lostLon},${lostLat}),pin-s-s+0000FF(${dto.lon},${dto.lat})/auto/600x300@2x?access_token=${mapboxToken}`;
+
+      await this.emailService.sendEmail({
+        to: lostPet.ownerContact,
+        subject: `¡Posible coincidencia para tu mascota perdida!`,
+        htmlBody: `
+          <h1>¡Hola! Hemos encontrado una mascota similar a la tuya.</h1>
+          <p>Especie: ${dto.species}</p>
+          <p>Descripción: ${dto.description}</p>
+          <p>Contacto de quien la encontró: ${dto.reporterContact}</p>
+          <p>Ubicación:</p>
+          <img src="${mapUrl}" alt="Mapa de la ubicación" />
+        `,
+      });
+      logger.info(`[FoundPetsService] Correo enviado a ${lostPet.ownerContact}`);
+    }
 
     return {
       foundPet: savedFoundPet,
