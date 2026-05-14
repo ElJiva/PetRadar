@@ -12,6 +12,10 @@ jobs:
             - name: Clonar repositorio
               uses: actions/checkout@v4
 
+            - name: Convertir imagen a minúsculas
+              id: image_lower
+              run: echo "IMAGE=$(echo '${{ secrets.DOCKER_IMAGE }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
             - name: Login a Github Container Registry
               uses: docker/login-action@v3
               with:
@@ -31,5 +35,5 @@ jobs:
                 context: .
                 push: true
                 tags: |
-                    ${{ secrets.DOCKER_IMAGE }}:${{ github.sha }}
-                    ${{ secrets.DOCKER_IMAGE }}:latest
+                    ${{ steps.image_lower.outputs.IMAGE }}:${{ github.sha }}
+                    ${{ steps.image_lower.outputs.IMAGE }}:latest
