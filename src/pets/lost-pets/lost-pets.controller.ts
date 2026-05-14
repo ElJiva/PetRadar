@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { LostPetsService } from './lost-pets.service';
-import { LostPetCDto } from 'src/core/models/lost-pet.model';
+import type { LostPetCDto } from 'src/core/models/lost-pet.model';
 import { logger } from 'src/config/logger';
 
 @Controller('lost-pets')
