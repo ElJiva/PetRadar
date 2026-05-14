@@ -1,16 +1,32 @@
-FROM node:alpine
+# ──────────────────────────────────────────────────────────
+# Stage 1: Builder — instala dependencias y compila TypeScript
+# ──────────────────────────────────────────────────────────
+FROM node:20-alpine AS builder
+
 WORKDIR /app
 
-#LAS IMAGENES DE DOCKER FUNCIONA POR CAPAS,
-#CADA COMANDO ES UNA CAPA!!!!
-# Copiar el proyecto a la imagen de Docker
+# Copiar manifests primero para aprovechar caché de capas
 COPY package.json package-lock.json* ./
-# Instalar las dependencias con npm i
-RUN npm install
-# Copiamos el resto proyecto
+RUN npm ci
+
+# Copiar el resto del código y compilar
 COPY . .
-# Compilar el proyecto
 RUN npm run build
+
+# ──────────────────────────────────────────────────────────
+# Stage 2: Production — imagen final ligera
+# ──────────────────────────────────────────────────────────
+FROM node:20-alpine AS production
+
+WORKDIR /app
+
+# Solo instalar dependencias de producción
+COPY package.json package-lock.json* ./
+RUN npm ci --omit=dev
+
+# Copiar el código compilado desde el builder
+COPY --from=builder /app/dist ./dist
+
 EXPOSE 3000
-# Colocar un comando de inicio
-CMD ["node","dist/main"]
+
+CMD ["node", "dist/main"]

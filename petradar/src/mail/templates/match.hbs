@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PetRadar – Posible coincidencia</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:ital,wght@0,700;1,400&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --green-900: #052e16;
+      --green-800: #14532d;
+      --green-700: #15803d;
+      --green-600: #16a34a;
+      --green-500: #22c55e;
+      --green-400: #4ade80;
+      --green-200: #bbf7d0;
+      --green-100: #dcfce7;
+      --green-50: #f0fdf4;
+      --amber-500: #f59e0b;
+      --red-500: #ef4444;
+      --blue-500: #3b82f6;
+      --gray-800: #1f2937;
+      --gray-600: #4b5563;
+      --gray-400: #9ca3af;
+      --gray-100: #f3f4f6;
+      --white: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px 0 40px;
+      background: #e8f5e9;
+      font-family: 'DM Sans', Arial, sans-serif;
+    }
+
+    .wrapper {
+      max-width: 600px;
+      margin: 0 auto;
+      background: var(--white);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(5, 46, 22, 0.13);
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(135deg, var(--green-800) 0%, var(--green-600) 60%, var(--green-400) 100%);
+      padding: 40px 32px 36px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 80% 20%, rgba(74, 222, 128, 0.25) 0%, transparent 60%),
+        radial-gradient(ellipse at 20% 80%, rgba(5, 46, 22, 0.4) 0%, transparent 60%);
+    }
+
+    .header-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .header-badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 100px;
+      padding: 5px 16px;
+      font-size: 12px;
+      color: var(--green-200);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .header h1 {
+      margin: 0 0 8px;
+      color: var(--white);
+      font-family: 'Fraunces', serif;
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .header p {
+      margin: 0;
+      color: var(--green-200);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .header p strong {
+      color: var(--white);
+    }
+
+    /* ── ALERT BANNER ── */
+    .alert-banner {
+      background: var(--green-100);
+      border-left: 5px solid var(--green-500);
+      padding: 14px 24px;
+      font-size: 14px;
+      color: var(--green-800);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .alert-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    /* ── SECTIONS ── */
+    .section {
+      padding: 28px 28px 0;
+    }
+
+    .section:last-of-type {
+      padding-bottom: 28px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Fraunces', serif;
+      font-size: 18px;
+      color: var(--gray-800);
+      margin: 0 0 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--green-100);
+    }
+
+    .badge-lost {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #fef2f2;
+      border: 2px solid var(--red-500);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .badge-found {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #eff6ff;
+      border: 2px solid var(--blue-500);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    /* ── GRID DE CAMPOS ── */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .field {
+      background: var(--green-50);
+      border: 1px solid var(--green-100);
+      border-radius: 10px;
+      padding: 11px 14px;
+      transition: background 0.2s;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field .label {
+      font-size: 10px;
+      color: var(--green-700);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+
+    .field .value {
+      font-size: 14px;
+      color: var(--gray-800);
+      font-weight: 600;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      margin: 24px 28px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--green-200), transparent);
+    }
+
+    /* ── CONTACT CARD ── */
+    .contact-card {
+      background: linear-gradient(135deg, var(--green-50), #f0fdf4);
+      border: 1px solid var(--green-200);
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin-top: 12px;
+    }
+
+    .contact-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+      font-size: 14px;
+      color: var(--green-900);
+    }
+
+    .contact-row+.contact-row {
+      border-top: 1px solid var(--green-100);
+    }
+
+    .contact-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--green-600);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .contact-label {
+      font-size: 11px;
+      color: var(--green-700);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .contact-val {
+      font-size: 14px;
+      color: var(--gray-800);
+      font-weight: 600;
+    }
+
+    /* ── MAP ── */
+    .map-section {
+      padding: 0 28px 28px;
+    }
+
+    .map-section .section-title {
+      margin-bottom: 14px;
+    }
+
+    .map-section img {
+      width: 100%;
+      border-radius: 12px;
+      border: 2px solid var(--green-100);
+      display: block;
+    }
+
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--gray-600);
+    }
+
+    .legend span {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-weight: 500;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .dot-red {
+      background: var(--red-500);
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+    }
+
+    .dot-blue {
+      background: var(--blue-500);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    /* ── CTA ── */
+    .cta-section {
+      padding: 0 28px 28px;
+      text-align: center;
+    }
+
+    .cta-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--green-700), var(--green-500));
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+      padding: 14px 36px;
+      border-radius: 100px;
+      box-shadow: 0 4px 16px rgba(22, 163, 74, 0.35);
+      letter-spacing: 0.02em;
+    }
+
+    .cta-note {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--gray-400);
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      background: var(--green-900);
+      text-align: center;
+      padding: 20px 24px;
+      font-size: 12px;
+      color: var(--green-400);
+      line-height: 1.7;
+    }
+
+    .footer strong {
+      color: var(--green-200);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrapper">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header-inner">
+        <div class="header-badge">🐾 Alerta de coincidencia</div>
+        <h1>PetRadar</h1>
+        <p>¡Se encontró una mascota cerca de donde se perdió <strong>{{lostPetName}}</strong>!</p>
+      </div>
+    </div>
+
+    <!-- ALERT BANNER -->
+    <div class="alert-banner">
+      <span class="alert-icon">📍</span>
+      <span>Hola <strong>{{ownerName}}</strong>, detectamos una mascota a menos de <strong>500 metros</strong> del lugar
+        donde se reportó la pérdida de <strong>{{lostPetName}}</strong>.</span>
+    </div>
+
+    <!-- MASCOTA PERDIDA -->
+    <div class="section">
+      <div class="section-title">
+        <div class="badge-lost">🔴</div>
+        Mascota Perdida
+      </div>
+      <div class="grid">
+        <div class="field">
+          <div class="label">Nombre</div>
+          <div class="value">{{lostPetName}}</div>
+        </div>
+        <div class="field">
+          <div class="label">Especie</div>
+          <div class="value">{{lostPetSpecies}}</div>
+        </div>
+        <div class="field">
+          <div class="label">Raza</div>
+          <div class="value">{{lostPetBreed}}</div>
+        </div>
+        <div class="field">
+          <div class="label">Color</div>
+          <div class="value">{{lostPetColor}}</div>
+        </div>
+        <div class="field">
+          <div class="label">Tamaño</div>
+          <div class="value">{{lostPetSize}}</div>
+        </div>
+        <div class="field">
+          <div class="label">Dirección pérdida</div>
+          <div class="value">{{lostAddress}}</div>
+        </div>
+        <div class="field full">
+          <div class="label">Descripción</div>
+          <div class="value">{{lostPetDescription}}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- MASCOTA ENCONTRADA -->
+    <div class="section">
+      <div class="section-title">
+        <div class="badge-found">🔵</div>
+        Mascota Encontrada
+      </div>
+      <div class="grid">
+        <div class="field">
+          <div class="label">Especie</div>
+          <div class="value">{{foundPetSpecies}}</div>
+        </div>
+        <div class="field">
+          <div class="label">Raza</div>
+          <div class="value">{{foundPetBreed}}</div>
+        </div>
+        <div class="field">
+          <div class="label">Color</div>
+          <div class="value">{{foundPetColor}}</div>
+        </div>
+        <div class="field">
+          <div class="label">Tamaño</div>
+          <div class="value">{{foundPetSize}}</div>
+        </div>
+        <div class="field">
+          <div class="label">Dirección hallazgo</div>
+          <div class="value">{{foundAddress}}</div>
+        </div>
+        <div class="field full">
+          <div class="label">Descripción</div>
+          <div class="value">{{foundPetDescription}}</div>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:24px;">
+        <span>📞</span> Contacto del Finder
+      </div>
+      <div class="contact-card">
+        <div class="contact-row">
+          <div class="contact-icon">👤</div>
+          <div>
+            <div class="contact-label">Nombre</div>
+            <div class="contact-val">{{finderName}}</div>
+          </div>
+        </div>
+        <div class="contact-row">
+          <div class="contact-icon">📧</div>
+          <div>
+            <div class="contact-label">Correo</div>
+            <div class="contact-val">{{finderEmail}}</div>
+          </div>
+        </div>
+        <div class="contact-row">
+          <div class="contact-icon">📱</div>
+          <div>
+            <div class="contact-label">Teléfono</div>
+            <div class="contact-val">{{finderPhone}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAPA -->
+    <div class="map-section" style="padding-top:24px;">
+      <div class="section-title">
+        <span>🗺️</span> Mapa de Ubicaciones
+      </div>
+      <img src="{{mapUrl}}" alt="Mapa con ambas ubicaciones" />
+      <div class="legend">
+        <span><span class="dot dot-red"></span>Donde se perdió</span>
+        <span><span class="dot dot-blue"></span>Donde se encontró</span>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-section">
+      <a href="mailto:{{finderEmail}}" class="cta-btn">✉️ Contactar al Finder ahora</a>
+      <p class="cta-note">O usa los datos de contacto de arriba para comunicarte directamente.</p>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      Este correo fue generado automáticamente por <strong>PetRadar</strong>.<br />
+      Ayudando a reunir familias y sus mascotas 🐾
+    </div>
+
+  </div>
+</body>
+
+</html>

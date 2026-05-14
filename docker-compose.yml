@@ -1,10 +1,10 @@
 version: '3.8'
 
 services:
-  # Base de Datos PostgreSQL
+  # Base de Datos PostgreSQL con PostGIS (requerido para ST_DWithin)
   db:
-    image: postgres:16-alpine
-    container_name: incident_api_db
+    image: postgis/postgis:16-3.4-alpine
+    container_name: petradar_db
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -19,12 +19,12 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - incident_network
+      - petradar_network
 
   # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: incident_api_redis
+    container_name: petradar_redis
     ports:
       - "${REDIS_PORT}:6379"
     healthcheck:
@@ -35,22 +35,18 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - incident_network
+      - petradar_network
 
-  # API NestJS (opcional, solo si quieres ejecutar desde Docker)
+  # API NestJS
   api:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: incident_api_app
+    container_name: petradar_api
     ports:
       - "${PORT}:3000"
     environment:
       PORT: 3000
-      MAILER_EMAIL: ${MAILER_EMAIL}
-      MAILER_PASSWORD: ${MAILER_PASSWORD}
-      MAILER_SERVICE: ${MAILER_SERVICE}
-      MAPBOX_TOKEN: ${MAPBOX_TOKEN}
       DB_HOST: db
       DB_NAME: ${DB_NAME}
       DB_PORT: 5432
@@ -65,14 +61,12 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - incident_network
-    # Descomenta lo siguiente si quieres ejecutar desde Docker
-    # command: npm run start:prod
+      - petradar_network
 
 volumes:
   postgres_data:
   redis_data:
 
 networks:
-  incident_network:
+  petradar_network:
     driver: bridge
