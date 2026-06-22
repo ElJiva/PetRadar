@@ -10,7 +10,7 @@ export const envs = {
   DB_PASSWORD: env.get('DB_PASSWORD').required().asString(),
   APPINSIGHTS_CONNECTION_STRING: env
     .get('APPINSIGHTS_CONNECTION_STRING')
-    .required()
+    .default('none')
     .asString(),
   REDIS_HOST: env.get('REDIS_HOST').required().asString(),
   REDIS_PORT: env.get('REDIS_PORT').required().asPortNumber(),
